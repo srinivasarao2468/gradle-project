@@ -3,29 +3,22 @@ pipeline {
     
     	environment {
 		    PATH = "${PATH}:${getGradlePath()}"
-		    DEV_IP = "172.31.43.141"
+		    DEV_SERVER_IP = "172.31.43.141"
     	}
 
     stages {
-        stage("scm checkout"){
-            steps{
-                git branch: 'main', url: 'https://github.com/srinivasarao2468/gradle-project.git'
-            }
-        }  
-      
-      
         stage("Build"){
             steps{
                 sh 'gradle clean build'
             }
         }
         
-        stage("Copy File"){
+        stage("Copy and Run"){
             steps {
                 sshagent(['deploy-dev']) {
-                    sh 'ssh -o StrictHostKeyChecking=no ec2-user@${DEV_IP}'
-                    sh 'scp  app/build/libs/*.jar ec2-user@${DEV_IP}:~/'
-                    sh 'ssh ec2-user@${DEV_IP} java -jar app.jar'
+                    sh 'ssh -o StrictHostKeyChecking=no ec2-user@${DEV_SERVER_IP}'
+                    sh 'scp  app/build/libs/*.jar ec2-user@${DEV_SERVER_IP}:~/'
+                    sh 'ssh ec2-user@${DEV_SERVER_IP} java -jar app.jar'
                 }
             }
         }
